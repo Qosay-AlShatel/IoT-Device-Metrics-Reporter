@@ -86,6 +86,12 @@ curl -s http://localhost:8000/health
 
 Containers are configured with restart: always so they come back after reboot (once Docker starts).
 
+## Example Dashboard
+
+Once everything is running, open [http://localhost:8000](http://localhost:8000) in your browser.
+
+![IoT Device Metrics Dashboard](docs/dashboard.png)
+
 ## Host Agent (systemd)
 
 Install the host-side agent as a Linux service (second agent):
