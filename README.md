@@ -32,14 +32,23 @@ The dashboard shows current metrics and online/offline status for each device.
 ## Project Structure
 
 iot-metrics/
+
 ├─ agent/
+
 │ ├─ agent.py
+
 │ └─ Dockerfile
+
 ├─ server/
+
 │ ├─ app.py
+
 │ ├─ templates/
+
 │ │ └─ index.html
+
 │ └─ Dockerfile
+
 └─ docker-compose.yml
 
 
@@ -67,20 +76,20 @@ curl -s http://localhost:8000/health
 
 # Open the dashboard in a browser:
 # http://localhost:8000
+```
 
+**Services started**
 
-Services started
+- server → Flask server exposed on localhost:8000
 
-server → Flask server exposed on localhost:8000
-
-agent → containerized device agent posting metrics periodically
+- agent → containerized device agent posting metrics periodically
 
 Containers are configured with restart: always so they come back after reboot (once Docker starts).
 
-Host Agent (systemd)
+## Host Agent (systemd)
 
 Install the host-side agent as a Linux service (second agent):
-
+```bash
 # Copy the agent to a stable location
 sudo mkdir -p /opt/metrics-agent
 sudo cp ./agent/agent.py /opt/metrics-agent/
@@ -112,24 +121,28 @@ sudo systemctl enable --now metrics-agent
 
 # Verify
 systemctl status metrics-agent --no-pager
-
+```
 Open the dashboard again—you should see HOST-001 (host) and ctr-001 (container) online.
 
-Configuration
+---
 
-Agent flags
+## Configuration
 
---server (default: http://localhost:8000)
+**Agent flags**
 
---interval seconds (default: 10)
+- --server (default: http://localhost:8000)
 
---device-id (default: derived from machine-id or hostname)
+- --interval seconds (default: 10)
 
-Online/Offline logic
+- --device-id (default: derived from machine-id or hostname)
 
-A device is Online if it reported within roughly 2 × interval; otherwise Offline.
+**Online/Offline logic**
 
-Endpoints
+- A device is Online if it reported within roughly 2 × interval; otherwise Offline.
+
+---
+
+## Endpoints
 
 POST /metrics → device payload (JSON)
 
@@ -139,38 +152,37 @@ GET /devices → JSON for the dashboard’s table refresh
 
 GET /health → {"status":"ok"}
 
-Troubleshooting
+---
 
-Docker permissions
+## Troubleshooting
+
+- **Docker permissions**
 Add your user to the docker group and reload membership:
-
+```
 sudo usermod -aG docker $USER
 newgrp docker
-
-Port 8000 already in use
+```
+- **Port 8000 already in use**
 Stop old processes or containers using that port:
-
+```
 pkill -f "python server/app.py" || true
 docker compose down --remove-orphans
 docker compose up -d --build
-
-Agents not visible
+```
+- **Agents not visible**
 Check logs and health:
-
+```
 docker compose logs -f server
 docker compose logs -f agent
 curl -s http://localhost:8000/health
+```
+- **After reboot**
+  - Containers: restart: always brings them back once Docker starts.
+  - Host agent: systemd service auto-starts on boot.
 
-After reboot
+---
 
-Containers: restart: always brings them back once Docker starts.
-
-Host agent: systemd service auto-starts on boot.
-
-Notes
-
-Agent uses only Linux facilities (/proc, /sys, ip) and Python standard library.
-
-The server keeps the latest device state in memory (no DB required).
-
-The dashboard auto-refreshes every 5 seconds.
+## Notes
+- Agent uses only Linux facilities (/proc, /sys, ip) and Python standard library.
+- The server keeps the latest device state in memory (no DB required).
+- The dashboard auto-refreshes every 5 seconds.
