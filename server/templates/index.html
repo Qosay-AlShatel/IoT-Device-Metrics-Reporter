@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>IoT Device Metrics</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
+    th { background: #f5f5f5; text-align: left; }
+    .online { color: #0a0; font-weight: 600; }
+    .offline { color: #888; font-weight: 600; }
+    .small { color: #555; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h2>IoT Device Metrics</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Device</th>
+        <th>Status</th>
+        <th>Uptime (s)</th>
+        <th>CPU %</th>
+        <th>Mem %</th>
+        <th>Disk %</th>
+        <th>Loadavg</th>
+        <th>Interface</th>
+        <th>IP</th>
+        <th>MAC</th>
+        <th>RX Bytes</th>
+        <th>TX Bytes</th>
+        <th>RX Packets</th>
+        <th>TX Packets</th>
+        <th>Last Seen</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Filled by JS -->
+    </tbody>
+  </table>
+  <p class="small" id="now"></p>
+</body>
+<script>
+function ago(now, ts) {
+  const s = Math.max(0, now - ts);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m ago`;
+}
+
+async function refresh() {
+  try {
+    const res = await fetch('/devices', { cache: 'no-store' });
+    const data = await res.json();
+    const tbody = document.querySelector('tbody');
+
+    tbody.innerHTML = data.rows.map(r => `
+      <tr>
+        <td>${r.device_id}</td>
+        <td class="${r.online ? 'online' : 'offline'}">${r.online ? 'Online' : 'Offline'}</td>
+        <td>${r.uptime_s}</td>
+        <td>${r.cpu_pct}</td>
+        <td>${r.mem_pct}</td>
+        <td>${r.disk_pct}</td>
+        <td>${r.loadavg ? r.loadavg.join(', ') : ''}</td>
+        <td>${r.iface}</td>
+        <td>${r.ip}</td>
+        <td>${r.mac}</td>
+        <td>${r.rx_bytes}</td>
+        <td>${r.tx_bytes}</td>
+        <td>${r.rx_packets}</td>
+        <td>${r.tx_packets}</td>
+        <td class="small">${ago(data.now, r.last_seen)}</td>
+      </tr>
+    `).join('');
+
+    document.getElementById('now').textContent = "Now: " + new Date(data.now * 1000).toLocaleTimeString();
+  } catch (e) {
+    console.error('refresh failed', e);
+  }
+}
+
+refresh();                 // initial load
+setInterval(refresh, 5000); // refresh every 5s
+</script>
+</html>

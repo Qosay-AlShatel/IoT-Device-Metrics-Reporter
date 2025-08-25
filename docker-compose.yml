@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  server:
+    build: ./server
+    ports:
+      - "8000:8000"
+    restart: always
+
+  agent1:
+    build: ./agent
+    depends_on:
+      - server
+    command: ["python","agent.py","--server","http://server:8000","--interval","10","--device-id","ctr-001"]
+    restart: always
+
+
+
