@@ -1,6 +1,8 @@
 # IoT Device Metrics Reporter
 
-A minimal system where Linux-based IoT devices collect **system** and **network** metrics and report them to a central **Monitoring Server**. The project includes:
+A minimal system where Linux-based IoT devices collect **system** and **network** metrics and report them to a central **Monitoring Server**. 
+
+**The project includes:**
 - One **host agent** (runs via `systemd` on the VM)
 - One **containerized agent** (runs via Docker)
 - A **Flask** monitoring server (Dockerized) with a simple auto-refreshing web dashboard
